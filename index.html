@@ -2852,8 +2852,31 @@
                     showLoader(true);
                     callAPI('sendDefaulterEmails', { phones: phones, monthStr: currentMonthStr }).then(res => {
                         showLoader(false);
-                        if (res.error) Swal.fire('തെറ്റ്', res.error, 'error');
-                        else Swal.fire('വിജയിച്ചു', `${res.count} പേർക്ക് വിജയകരമായി ഇമെയിൽ അയച്ചു! ✅`, 'success');
+                        if (res.error) {
+                            Swal.fire('തെറ്റ്', res.error, 'error');
+                        } else {
+                            if (res.failed && res.failed.length > 0) {
+                                Swal.fire({
+                                    title: 'റിപ്പോർട്ട്',
+                                    html: `
+                                        <div class="text-center mb-4">
+                                            <p class="text-emerald-600 font-black text-lg">${res.count} പേർക്ക് ഇമെയിൽ അയച്ചു ✅</p>
+                                            <p class="text-rose-600 font-bold mt-2">${res.failed.length} പേർക്ക് അയക്കാൻ കഴിഞ്ഞില്ല ❌</p>
+                                        </div>
+                                        <div class="text-left bg-slate-50 p-4 rounded-2xl border border-slate-100 max-h-48 overflow-y-auto no-scrollbar">
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">പരാജയപ്പെട്ടവർ:</p>
+                                            <div class="text-[11px] font-bold text-slate-600 space-y-1">
+                                                ${res.failed.map(f => `<div class="flex justify-between border-b border-slate-100 pb-1 last:border-0"><span>${f.name}</span> <span class="text-rose-400 text-[9px] uppercase">${f.reason}</span></div>`).join('')}
+                                            </div>
+                                        </div>
+                                    `,
+                                    icon: 'info',
+                                    confirmButtonText: 'ശരി'
+                                });
+                            } else {
+                                Swal.fire('വിജയിച്ചു', `${res.count} പേർക്ക് വിജയകരമായി ഇമെയിൽ അയച്ചു! ✅`, 'success');
+                            }
+                        }
                     });
                 }
             });
@@ -3221,17 +3244,41 @@
             if (defaulters.length === 0) {
                 container.innerHTML = '<p class="text-center text-slate-400 font-bold text-xs p-5 border border-dashed rounded-xl bg-slate-50">എല്ലാവരും പണമടച്ചു! 🎉</p>';
             } else {
-                container.innerHTML = defaulters.map(m => `
-                    <div class="flex justify-between items-center p-3 border border-slate-100 rounded-xl bg-white shadow-sm">
-                        <div>
-                            <p class="font-black text-sm text-slate-800 uppercase leading-none mb-1">${m.name}</p>
-                            <p class="text-[10px] text-slate-400 font-bold tracking-widest">${m.phone}</p>
-                        </div>
-                        <button onclick="window.open('https://wa.me/91${m.phone.replace(/\D/g, '')}?text=${encodeURIComponent('السلام عليكم \n' + m.name + ',\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ' + currentMonthStr + 'നിലവിലെ മാസത്തെ തുക  അടച്ചിട്ടില്ല.\nhttps://muaawina.github.io/muaawina.com/')}', '_blank')" class="w-9 h-9 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
-                            <i class="fab fa-whatsapp text-lg"></i>
-                        </button>
-                    </div>
-                `).join('');
+                let grouped = {};
+                defaulters.forEach(m => {
+                    let b = m.batch || 'UNASSIGNED';
+                    if (!grouped[b]) grouped[b] = [];
+                    grouped[b].push(m);
+                });
+
+                let sortedBatches = Object.keys(grouped).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                let html = '';
+                let index = 1;
+
+                sortedBatches.forEach(batch => {
+                    html += `<div class="bg-amber-100 text-amber-800 font-black text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg mb-2 mt-4 inline-block shadow-sm border border-amber-200">📁 ${batch}</div>`;
+                    html += `<div class="space-y-2">`;
+                    
+                    grouped[batch].forEach(m => {
+                        html += `
+                        <div class="flex justify-between items-center p-3 border border-slate-100 rounded-xl bg-white shadow-sm hover:border-blue-100 transition-all group">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <div class="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center font-black text-[10px] shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">${index}</div>
+                                <div class="truncate">
+                                    <p class="font-black text-[13px] text-slate-800 uppercase leading-none mb-1 truncate">${m.name}</p>
+                                    <p class="text-[9px] text-slate-400 font-bold tracking-widest truncate">${m.phone}</p>
+                                </div>
+                            </div>
+                            <button onclick="window.open('https://wa.me/91${m.phone.replace(/\D/g, '')}?text=${encodeURIComponent('السلام عليكم \n' + m.name + ',\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ' + currentMonthStr + 'നിലവിലെ മാസത്തെ തുക  അടച്ചിട്ടില്ല.\nhttps://muaawina.github.io/muaawina.com/')}', '_blank')" class="w-9 h-9 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-sm shrink-0 hover:bg-emerald-100">
+                                <i class="fab fa-whatsapp text-lg"></i>
+                            </button>
+                        </div>`;
+                        index++;
+                    });
+                    html += `</div>`;
+                });
+                
+                container.innerHTML = html;
             }
             document.getElementById('reminderModal').classList.remove('hidden');
         }

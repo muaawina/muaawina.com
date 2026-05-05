@@ -962,7 +962,7 @@
 
                 <div class="glass-card overflow-hidden shadow-xl border border-slate-100">
                     <div id="adminMemberList"
-                        class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto no-scrollbar bg-white shadow-inner shadow-slate-50">
+                        class="divide-y divide-slate-100 max-h-[65vh] overflow-y-auto no-scrollbar bg-white shadow-inner shadow-slate-50">
                     </div>
                 </div>
             </div>
@@ -991,7 +991,7 @@
                 </div>
                 <div class="glass-card overflow-hidden shadow-xl border border-slate-100">
                     <div id="adminLoginList"
-                        class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto no-scrollbar bg-white shadow-inner shadow-slate-50">
+                        class="divide-y divide-slate-100 max-h-[65vh] overflow-y-auto no-scrollbar bg-white shadow-inner shadow-slate-50">
                     </div>
                 </div>
             </div>
@@ -2017,6 +2017,9 @@
             const mFilter = document.getElementById('memberBatchFilter');
             if (rFilter) rFilter.innerHTML = options;
             if (mFilter) mFilter.innerHTML = options;
+            
+            // Re-render custom dropdowns after updating options
+            if (typeof initCustomDropdowns === 'function') initCustomDropdowns();
         }
 
         function populateMonthFilter() {
@@ -2034,9 +2037,12 @@
                 return monthNames.indexOf(mA) - monthNames.indexOf(mB);
             });
 
-            let options = '<option value="all">മാസം തിരിച്ച് തിരയുക</option>' + sortedMonths.map(m => `<option value="${m}">${m}</option>`).join('');
+            let options = '<option value="all">മാസം തിരിച്ച് തിരയുക (Month-wise)</option>' + sortedMonths.map(m => `<option value="${m}">${m}</option>`).join('');
             const monthFilterEl = document.getElementById('monthWiseFilter');
             if (monthFilterEl) monthFilterEl.innerHTML = options;
+            
+            // Re-render custom dropdowns after updating options
+            if (typeof initCustomDropdowns === 'function') initCustomDropdowns();
         }
         function updateAdminStats(batch) {
             let filtered = (batch === 'all' || batch === 'All') ? adminMembers : adminMembers.filter(m => m.batch === batch);
@@ -3492,6 +3498,122 @@
                 showLoader(false);
                 Swal.fire('പിഴവ്', 'നെറ്റ്‌വർക്ക് പ്രശ്നം! ഒന്നുകൂടി ശ്രമിക്കുക.', 'error');
             });
+        }
+
+        // --- GLOBAL CUSTOM DROPDOWN LOGIC ---
+        function initCustomDropdowns() {
+            const selects = document.querySelectorAll('select.custom-select, select#profBlood, select#loginStatusFilter, select#statusFilter, select#bulkMonthSelect, select#monthWiseFilter, select#memberBatchFilter, select#batchReportFilter');
+            
+            selects.forEach(select => {
+                if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-dropdown-container')) {
+                    select.nextElementSibling.remove();
+                }
+
+                select.style.display = 'none';
+
+                const container = document.createElement('div');
+                container.className = 'relative w-full custom-dropdown-container';
+                
+                let selectedOption = select.options[select.selectedIndex] || select.options[0];
+                let btnText = selectedOption ? selectedOption.text : 'തിരഞ്ഞെടുക്കുക (Select)';
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'w-full p-3.5 rounded-xl border border-slate-200 bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] flex justify-between items-center transition-all duration-300 hover:border-blue-300 hover:shadow-[0_4px_15px_-3px_rgba(6,81,237,0.15)] active:scale-[0.98] outline-none';
+                
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-8 h-8 flex-shrink-0 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                            <i class="fas fa-filter text-xs"></i>
+                        </div>
+                        <span class="font-black text-slate-700 text-[11px] tracking-wide truncate dropdown-btn-text text-left">${btnText}</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-slate-400 text-xs transition-transform duration-300 dropdown-icon"></i>
+                `;
+
+                const menu = document.createElement('div');
+                menu.className = 'absolute z-[100] w-full mt-2 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 translate-y-[-10px] origin-top';
+                
+                const ul = document.createElement('ul');
+                ul.className = 'max-h-64 overflow-y-auto no-scrollbar py-2 divide-y divide-slate-50';
+
+                const colors = ['blue', 'emerald', 'rose', 'purple', 'orange', 'teal', 'red'];
+                
+                Array.from(select.options).forEach((option, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'px-5 py-3.5 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors group';
+                    
+                    const color = colors[index % colors.length];
+                    
+                    li.innerHTML = `
+                        <div class="w-2 h-2 flex-shrink-0 rounded-full bg-slate-300 group-hover:bg-${color}-500 transition-colors shadow-sm"></div>
+                        <span class="font-bold text-[11px] text-slate-600 group-hover:text-${color}-700 transition-colors">${option.text}</span>
+                    `;
+                    
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        btn.querySelector('.dropdown-btn-text').innerText = option.text;
+                        select.value = option.value;
+                        
+                        const event = new Event('change', { bubbles: true });
+                        select.dispatchEvent(event);
+                        
+                        closeMenu();
+                    });
+                    
+                    ul.appendChild(li);
+                });
+
+                menu.appendChild(ul);
+                container.appendChild(btn);
+                container.appendChild(menu);
+                
+                select.parentNode.insertBefore(container, select.nextSibling);
+
+                function closeMenu() {
+                    menu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+                    btn.querySelector('.dropdown-icon').style.transform = 'rotate(0deg)';
+                }
+
+                function openMenu() {
+                    document.querySelectorAll('.custom-dropdown-container .absolute').forEach(m => {
+                        m.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+                    });
+                    document.querySelectorAll('.custom-dropdown-container .dropdown-icon').forEach(i => {
+                        i.style.transform = 'rotate(0deg)';
+                    });
+
+                    menu.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+                    btn.querySelector('.dropdown-icon').style.transform = 'rotate(180deg)';
+                }
+
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (menu.classList.contains('opacity-0')) {
+                        openMenu();
+                    } else {
+                        closeMenu();
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.custom-dropdown-container')) {
+                document.querySelectorAll('.custom-dropdown-container .absolute').forEach(menu => {
+                    menu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+                });
+                document.querySelectorAll('.custom-dropdown-container .dropdown-icon').forEach(icon => {
+                    icon.style.transform = 'rotate(0deg)';
+                });
+            }
+        });
+        
+        // Initialize static dropdowns immediately when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCustomDropdowns);
+        } else {
+            initCustomDropdowns();
         }
     </script>
     <div id="pdfTemplateContainer" class="fixed -left-[9999px] top-0 pointer-events-none z-[-1]">

@@ -1409,12 +1409,29 @@ const openUpiApp = (url) => {
 const gpayBtn = document.getElementById('gpayBtn');
 if (gpayBtn) {
     gpayBtn.onclick = () => {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if(isIOS) {
-            openUpiApp(`gpay://upi/pay?${baseUpiParams}`);
-        } else {
-            openUpiApp(`intent://pay?${baseUpiParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`);
-        }
+        let gpayId = upiId; // Full UPI ID
+        Swal.fire({
+            title: 'Google Pay',
+            html: `GPay-ൽ <b>Pay UPI ID</b> എന്ന ഓപ്ഷൻ വഴി പണമടക്കാൻ താഴെയുള്ള UPI ID ഉപയോഗിക്കുക:<br><br><b style="font-size: 18px; color: #2563eb; letter-spacing: 1px;">${gpayId}</b>`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-copy"></i> കോപ്പി ചെയ്ത് GPay തുറക്കുക',
+            cancelButtonText: 'ക്ലോസ്',
+            confirmButtonColor: '#2563eb'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                navigator.clipboard.writeText(gpayId).then(() => {
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if(isIOS) {
+                        openUpiApp("gpay://");
+                    } else {
+                        openUpiApp("intent://#Intent;package=com.google.android.apps.nbu.paisa.user;end");
+                    }
+                }).catch(() => {
+                    Swal.fire('Error', 'നമ്പർ കോപ്പി ചെയ്യാൻ കഴിഞ്ഞില്ല', 'error');
+                });
+            }
+        });
     };
 }
 

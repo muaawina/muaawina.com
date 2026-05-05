@@ -1007,7 +1007,8 @@
                 </p>
                 <div
                     class="mb-8 p-4 bg-white rounded-3xl border-2 border-dashed border-slate-200 inline-block shadow-inner">
-                    <img id="payQR" src="" class="w-40 h-40 mx-auto rounded-lg object-contain"></div>
+                    <img id="payQR" src="" class="w-40 h-40 mx-auto rounded-lg object-contain">
+                </div>
                 <div
                     class="bg-blue-50 p-5 rounded-2xl flex justify-between items-center mb-8 border border-blue-100 text-left">
                     <span class="text-[10px] font-black text-blue-800 uppercase tracking-widest">അടക്കേണ്ട
@@ -1104,7 +1105,8 @@
                 <div
                     class="bg-blue-50 p-5 rounded-2xl flex justify-between mb-8 shadow-sm border border-blue-100 items-center">
                     <span class="font-black text-blue-800 text-xs uppercase opacity-60">Total:</span><span
-                        id="bulkTotalDisplay" class="text-2xl font-black text-blue-700">₹0</span></div>
+                        id="bulkTotalDisplay" class="text-2xl font-black text-blue-700">₹0</span>
+                </div>
                 <button onclick="confirmBulkSelection()"
                     class="w-full py-5 bg-blue-600 text-white rounded-xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest">തുടരുക</button>
                 <button onclick="document.getElementById('bulkPayModal').classList.add('hidden')"
@@ -1116,7 +1118,8 @@
             <div class="glass-card w-full max-w-xs p-10 text-center border-t-8 border-slate-900 shadow-2xl modal-up">
                 <div
                     class="w-16 h-16 bg-slate-100 text-slate-800 rounded-2xl mx-auto mb-6 flex items-center justify-center text-2xl shadow-inner shadow-slate-200">
-                    <i class="fas fa-lock"></i></div>
+                    <i class="fas fa-lock"></i>
+                </div>
                 <h3 class="font-black text-xl mb-8 text-slate-800 uppercase tracking-tight italic">Admin Access</h3>
                 <input type="password" id="adminPass" placeholder="••••"
                     onkeypress="if(event.key === 'Enter') adminLogin()"
@@ -1397,6 +1400,15 @@
                     // ലോഗിൻ വിജയകരമായാൽ ഫോണിൽ സേവ് ചെയ്യുന്നു (എപ്പോഴും ലോഗിൻ ആയി കിടക്കാൻ)
                     localStorage.setItem('muaawina_phone', p);
                     localStorage.setItem('muaawina_mid', m);
+
+                    // ആപ്പ് ഉപയോഗിക്കുന്നുണ്ട് എന്ന് ഗൂഗിൾ ഷീറ്റിൽ രേഖപ്പെടുത്തുന്നു
+                    if (localStorage.getItem('muaawina_app_downloaded') !== 'yes') {
+                        callAPI('markAppDownloaded', { id: d.id }).then(res => {
+                            if (res && res.success) {
+                                localStorage.setItem('muaawina_app_downloaded', 'yes');
+                            }
+                        });
+                    }
 
                     if (d.config) APP_CONFIG = d.config;
                     currentMember = d;
@@ -2125,7 +2137,7 @@
                 // പ്രൊഫൈൽ പൂർണ്ണമാണോ എന്ന് നോക്കുന്നു
                 let chk = (val) => val && String(val).trim() !== "";
                 let isProfileSet = chk(m.email) && chk(m.blood) && chk(m.job) && chk(m.location) && chk(m.dob) && chk(m.place) && chk(m.address);
-                
+
                 // ആപ്പ് ഡൗൺലോഡ് ചെയ്തോ എന്ന് നോക്കുന്നു (Column R)
                 let appD = String(m.appDownloaded || "").trim().toLowerCase();
                 let isAppDownloaded = (appD === 'yes' || appD === 'true');
@@ -2157,7 +2169,7 @@
             l.innerHTML = mbs.map(m => {
                 let chk = (val) => val && String(val).trim() !== "";
                 let isProfileSet = chk(m.email) && chk(m.blood) && chk(m.job) && chk(m.location) && chk(m.dob) && chk(m.place) && chk(m.address);
-                
+
                 let appD = String(m.appDownloaded || "").trim().toLowerCase();
                 let isAppDownloaded = (appD === 'yes' || appD === 'true');
 

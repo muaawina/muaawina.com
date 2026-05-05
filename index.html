@@ -1392,7 +1392,8 @@ if (warningBox) {
             }, 1000);
            
             // --- പുതിയ UPI ആപ്പ് ലിങ്കിങ് കോഡ് ---
-const baseUpiParams = `pa=${upiId}&pn=MUAAWINA&am=${tot}&cu=INR`;
+const trId = "TXN" + Date.now();
+const baseUpiParams = `pa=${upiId}&pn=MUAAWINA&tn=MUAAWINA&am=${tot}&cu=INR&tr=${trId}`;
 
 // സുരക്ഷിതമായി ലിങ്ക് തുറക്കാനുള്ള ഫംഗ്ഷൻ
 const openUpiApp = (url) => {
@@ -1407,7 +1408,14 @@ const openUpiApp = (url) => {
 // Google Pay ബട്ടൺ
 const gpayBtn = document.getElementById('gpayBtn');
 if (gpayBtn) {
-    gpayBtn.onclick = () => openUpiApp(`gpay://upi/pay?${baseUpiParams}`);
+    gpayBtn.onclick = () => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if(isIOS) {
+            openUpiApp(`gpay://upi/pay?${baseUpiParams}`);
+        } else {
+            openUpiApp(`intent://pay?${baseUpiParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`);
+        }
+    };
 }
 
 // PhonePe ബട്ടൺ
@@ -1579,7 +1587,7 @@ if (mainPayConfirmBtn) {
         }
 
         function renderBatchDropdowns() {
-            let bt = [...new Set(adminMembers.map(m => m.batch))].sort();
+            let bt = [...new Set(adminMembers.map(m => m.batch))].sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
             let options = '<option value="all">എല്ലാ ബാച്ചുകളും (Total)</option>' + bt.map(b => `<option value="${b}">${b}</option>`).join('');
            
             const rFilter = document.getElementById('batchReportFilter');
@@ -2488,7 +2496,7 @@ function fetchDirectoryData() {
 
 // ബാച്ച് ബട്ടണുകൾ സെറ്റ് ചെയ്യാൻ
 function setupDirectoryBatches() {
-    let batches = [...new Set(directoryMembers.map(m => m.batch))].filter(b => b !== 'UNASSIGNED').sort();
+    let batches = [...new Set(directoryMembers.map(m => m.batch))].filter(b => b !== 'UNASSIGNED').sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
     const filterContainer = document.getElementById('dirBatchFilters');
     if (!filterContainer) return;
     

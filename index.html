@@ -983,9 +983,12 @@
                     </select>
 
                     <div class="flex items-stretch justify-between pt-3 border-t border-slate-100 mt-2 gap-3">
-                        <div class="bg-indigo-50/60 px-5 py-2.5 rounded-xl border border-indigo-100 flex flex-col items-center justify-center min-w-[80px] shadow-sm">
-                            <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">ആകെ</span>
-                            <span id="filteredLoginCount" class="text-xl font-black text-indigo-700 leading-none">0</span>
+                        <div
+                            class="bg-indigo-50/60 px-5 py-2.5 rounded-xl border border-indigo-100 flex flex-col items-center justify-center min-w-[80px] shadow-sm">
+                            <span
+                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">ആകെ</span>
+                            <span id="filteredLoginCount"
+                                class="text-xl font-black text-indigo-700 leading-none">0</span>
                         </div>
                         <button onclick="copyLoginsData()"
                             class="flex-1 bg-indigo-600 text-white rounded-xl font-black text-[11px] uppercase shadow-md active:scale-95 flex items-center justify-center gap-2 transition-all hover:bg-indigo-700 border border-indigo-500 shadow-indigo-200">
@@ -2021,7 +2024,7 @@
             const mFilter = document.getElementById('memberBatchFilter');
             if (rFilter) rFilter.innerHTML = options;
             if (mFilter) mFilter.innerHTML = options;
-            
+
             // Re-render custom dropdowns after updating options
             if (typeof initCustomDropdowns === 'function') initCustomDropdowns();
         }
@@ -2044,7 +2047,7 @@
             let options = '<option value="all">മാസം തിരിച്ച് തിരയുക (Month-wise)</option>' + sortedMonths.map(m => `<option value="${m}">${m}</option>`).join('');
             const monthFilterEl = document.getElementById('monthWiseFilter');
             if (monthFilterEl) monthFilterEl.innerHTML = options;
-            
+
             // Re-render custom dropdowns after updating options
             if (typeof initCustomDropdowns === 'function') initCustomDropdowns();
         }
@@ -2563,7 +2566,7 @@
             if (waBtn) {
                 waBtn.onclick = () => {
                     let msg = dueAmount > 0 ?
-                        `السلام عليكم \n${m.name},\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ₹${dueAmount} കുടിശ്ശികയുണ്ട്.\nമാസങ്ങൾ: ${dueMonthsList.join(', ')}` :
+                        `السلام عليكم \n${m.name},\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ₹${dueAmount} കുടിശ്ശികയുണ്ട്.\nമാസങ്ങൾ: ${dueMonthsList.join(', ')}\nhttps://muaawina.github.io/muaawina.com/` :
                         `السلام عليكم \n${m.name},\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യ കൃത്യമാണ്.`;
                     window.open(`https://wa.me/{m.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
                 };
@@ -2886,7 +2889,7 @@
                     confirmButtonText: 'അതെ, അയക്കുക', cancelButtonText: 'വേണ്ട'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        let msg = encodeURIComponent(`السلام عليكم \n${name},\nനിങ്ങളുടെ ${m} ${y} മാസത്തെ MUAAWINA വരിസംഖ്യ നിരസിച്ചിരിക്കുന്നു (Rejected). ദയവായി അഡ്മിനുമായി ബന്ധപ്പെടുക. ❌`);
+                        let msg = encodeURIComponent(`السلام عليكم \n${name},\nനിങ്ങളുടെ ${m} ${y} മാസത്തെ MUAAWINA വരിസംഖ്യ നിരസിച്ചിരിക്കുന്നു (Rejected).`);
                         window.open(`https://wa.me/91${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
                     }
                     showLoader(true);
@@ -3224,7 +3227,7 @@
                             <p class="font-black text-sm text-slate-800 uppercase leading-none mb-1">${m.name}</p>
                             <p class="text-[10px] text-slate-400 font-bold tracking-widest">${m.phone}</p>
                         </div>
-                        <button onclick="window.open('https://wa.me/91${m.phone.replace(/\D/g, '')}?text=${encodeURIComponent('السلام عليكم \n' + m.name + ',\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ' + currentMonthStr + ' മാസത്തെ തുക അടക്കാൻ ബാക്കിയുണ്ട്.')}', '_blank')" class="w-9 h-9 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+                        <button onclick="window.open('https://wa.me/91${m.phone.replace(/\D/g, '')}?text=${encodeURIComponent('السلام عليكم \n' + m.name + ',\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ' + currentMonthStr + 'നിലവിലെ മാസത്തെ തുക  അടച്ചിട്ടില്ല.\nhttps://muaawina.github.io/muaawina.com/')}', '_blank')" class="w-9 h-9 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
                             <i class="fab fa-whatsapp text-lg"></i>
                         </button>
                     </div>
@@ -3519,7 +3522,7 @@
         // --- GLOBAL CUSTOM DROPDOWN LOGIC ---
         function initCustomDropdowns() {
             const selects = document.querySelectorAll('select.custom-select, select#profBlood, select#loginStatusFilter, select#statusFilter, select#bulkMonthSelect, select#monthWiseFilter, select#memberBatchFilter, select#batchReportFilter');
-            
+
             selects.forEach(select => {
                 if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-dropdown-container')) {
                     select.nextElementSibling.remove();
@@ -3529,14 +3532,14 @@
 
                 const container = document.createElement('div');
                 container.className = 'relative w-full custom-dropdown-container';
-                
+
                 let selectedOption = select.options[select.selectedIndex] || select.options[0];
                 let btnText = selectedOption ? selectedOption.text : 'തിരഞ്ഞെടുക്കുക (Select)';
 
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'w-full p-3.5 rounded-xl border border-slate-200 bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] flex justify-between items-center transition-all duration-300 hover:border-blue-300 hover:shadow-[0_4px_15px_-3px_rgba(6,81,237,0.15)] active:scale-[0.98] outline-none';
-                
+
                 btn.innerHTML = `
                     <div class="flex items-center gap-3 overflow-hidden">
                         <div class="w-8 h-8 flex-shrink-0 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
@@ -3549,41 +3552,41 @@
 
                 const menu = document.createElement('div');
                 menu.className = 'absolute z-[100] w-full mt-2 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 translate-y-[-10px] origin-top';
-                
+
                 const ul = document.createElement('ul');
                 ul.className = 'max-h-64 overflow-y-auto no-scrollbar py-2 divide-y divide-slate-50';
 
                 const colors = ['blue', 'emerald', 'rose', 'purple', 'orange', 'teal', 'red'];
-                
+
                 Array.from(select.options).forEach((option, index) => {
                     const li = document.createElement('li');
                     li.className = 'px-5 py-3.5 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors group';
-                    
+
                     const color = colors[index % colors.length];
-                    
+
                     li.innerHTML = `
                         <div class="w-2 h-2 flex-shrink-0 rounded-full bg-slate-300 group-hover:bg-${color}-500 transition-colors shadow-sm"></div>
                         <span class="font-bold text-[11px] text-slate-600 group-hover:text-${color}-700 transition-colors">${option.text}</span>
                     `;
-                    
+
                     li.addEventListener('click', (e) => {
                         e.stopPropagation();
                         btn.querySelector('.dropdown-btn-text').innerText = option.text;
                         select.value = option.value;
-                        
+
                         const event = new Event('change', { bubbles: true });
                         select.dispatchEvent(event);
-                        
+
                         closeMenu();
                     });
-                    
+
                     ul.appendChild(li);
                 });
 
                 menu.appendChild(ul);
                 container.appendChild(btn);
                 container.appendChild(menu);
-                
+
                 select.parentNode.insertBefore(container, select.nextSibling);
 
                 function closeMenu() {
@@ -3614,7 +3617,7 @@
             });
         }
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             if (!event.target.closest('.custom-dropdown-container')) {
                 document.querySelectorAll('.custom-dropdown-container .absolute').forEach(menu => {
                     menu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
@@ -3624,7 +3627,7 @@
                 });
             }
         });
-        
+
         // Initialize static dropdowns immediately when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initCustomDropdowns);

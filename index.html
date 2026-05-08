@@ -2713,6 +2713,14 @@
             return m ? m.phone : '';
         }
 
+        // 1.1 വാട്സ്ആപ്പ് ലിങ്ക് ഉണ്ടാക്കാനുള്ള ഫംഗ്ഷൻ (International നമ്പറുകൾ ഉൾപ്പെടെ)
+        function getWALink(phone, msg = '') {
+            if (!phone) return '';
+            let wpNumber = String(phone).replace(/\D/g, '');
+            if (wpNumber.length === 10) wpNumber = '91' + wpNumber;
+            return `https://wa.me/${wpNumber}${msg ? '?text=' + encodeURIComponent(msg) : ''}`;
+        }
+
 
         // പേരുകളും നമ്പറുകളും ബാച്ച് അടിസ്ഥാനത്തിൽ നമ്പർ ഇട്ട് കോപ്പി ചെയ്യാൻ
         function copyData(type) {
@@ -2891,8 +2899,8 @@
                     confirmButtonText: 'അതെ, അയക്കുക', cancelButtonText: 'വേണ്ട'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        let msg = encodeURIComponent(`السلام عليكم \n${name},\nനിങ്ങളുടെ ${m} ${y} മാസത്തെ MUAAWINA വരിസംഖ്യ സ്വീകരിച്ചിരിക്കുന്നു (Approved). ✅`);
-                        window.open(`https://wa.me/91${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
+                        let msg = `السلام عليكم \n${name},\nനിങ്ങളുടെ ${m} ${y} മാസത്തെ MUAAWINA വരിസംഖ്യ സ്വീകരിച്ചിരിക്കുന്നു (Approved). ✅`;
+                        window.open(getWALink(phone, msg), '_blank');
                     }
                     showLoader(true);
                     callAPI('approvePayment', { r: r, id: id, y: y, m: m }).then(() => adminLogin());
@@ -2912,8 +2920,8 @@
                     confirmButtonText: 'അതെ, അയക്കുക', cancelButtonText: 'വേണ്ട'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        let msg = encodeURIComponent(`السلام عليكم \n${name},\nനിങ്ങളുടെ ${m} ${y} മാസത്തെ MUAAWINA വരിസംഖ്യ നിരസിച്ചിരിക്കുന്നു (Rejected).`);
-                        window.open(`https://wa.me/91${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
+                        let msg = `السلام عليكم \n${name},\nനിങ്ങളുടെ ${m} ${y} മാസത്തെ MUAAWINA വരിസംഖ്യ നിരസിച്ചിരിക്കുന്നു (Rejected).`;
+                        window.open(getWALink(phone, msg), '_blank');
                     }
                     showLoader(true);
                     callAPI('rejectPayment', { r: r }).then(() => adminLogin());
@@ -2955,7 +2963,7 @@
             container.innerHTML = list.map(a => {
                 let phone = findPhone(a.memberId); // ഇവിടെയും പേര് ഒഴിവാക്കി ID വെച്ച് മാത്രം തിരയുന്നു
                 let statusText = type === 'Approved' ? 'സ്വീകരിച്ചിരിക്കുന്നു (Approved). ✅' : 'നിരസിച്ചിരിക്കുന്നു (Rejected). ദയവായി അഡ്മിനുമായി ബന്ധപ്പെടുക. ❌';
-                let msg = encodeURIComponent(`السلام عليكم \n${a.name},\nനിങ്ങളുടെ ${a.month} ${a.year} മാസത്തെ MUAAWINA വരിസംഖ്യ ${statusText}`);
+                let msg = `السلام عليكم \n${a.name},\nനിങ്ങളുടെ ${a.month} ${a.year} മാസത്തെ MUAAWINA വരിസംഖ്യ ${statusText}`;
 
                 return `
                 <div class="flex justify-between items-center p-3 border border-slate-100 rounded-xl bg-white shadow-sm">
@@ -2964,7 +2972,7 @@
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${a.month} ${a.year}</p>
                     </div>
                     ${phone ?
-                        `<button onclick="window.open('https://wa.me/91${phone.replace(/\D/g, '')}?text=${msg}', '_blank')" class="w-10 h-10 ${type === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'} border rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+                        `<button onclick="window.open('${getWALink(phone, msg)}', '_blank')" class="w-10 h-10 ${type === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'} border rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
                         <i class="fab fa-whatsapp text-lg"></i>
                     </button>`
                         : `<span class="text-[9px] font-bold text-rose-400 tracking-widest uppercase">നമ്പർ ഇല്ല</span>`
@@ -3127,7 +3135,7 @@
                 <a href="tel:${m.phone}" class="flex-1 bg-white border-2 border-slate-100 text-slate-600 py-3 rounded-xl flex justify-center items-center gap-2 active:scale-95 transition-all hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 shadow-sm">
                     <i class="fas fa-phone-alt text-sm"></i> <span class="text-[11px] font-black tracking-widest">${m.phone}</span>
                 </a>
-<a href="https://wa.me/91${m.phone.replace(/\D/g, '')}" target="_blank" class="w-14 bg-[#25D366]/10 border-2 border-[#25D366]/20 text-[#25D366] rounded-xl flex justify-center items-center active:scale-95 transition-all hover:bg-[#25D366]/20 shadow-sm">
+<a href="javascript:void(0)" onclick="window.open('${getWALink(m.phone)}', '_blank')" class="w-14 bg-[#25D366]/10 border-2 border-[#25D366]/20 text-[#25D366] rounded-xl flex justify-center items-center active:scale-95 transition-all hover:bg-[#25D366]/20 shadow-sm">
                     <i class="fab fa-whatsapp text-xl"></i>
                 </a>
             </div>
@@ -3269,7 +3277,7 @@
                                     <p class="text-[9px] text-slate-400 font-bold tracking-widest truncate">${m.phone}</p>
                                 </div>
                             </div>
-                            <button onclick="window.open('https://wa.me/91${m.phone.replace(/\D/g, '')}?text=${encodeURIComponent('السلام عليكم \n' + m.name + ',\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ' + currentMonthStr + 'നിലവിലെ മാസത്തെ തുക  അടച്ചിട്ടില്ല.\nhttps://muaawina.github.io/muaawina.com/')}', '_blank')" class="w-9 h-9 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-sm shrink-0 hover:bg-emerald-100">
+                            <button onclick="window.open('${getWALink(m.phone, 'السلام عليكم \n' + m.name + ',\nനിങ്ങളുടെ MUAAWINA വരിസംഖ്യയിൽ ' + currentMonthStr + 'നിലവിലെ മാസത്തെ തുക  അടച്ചിട്ടില്ല.\nhttps://muaawina.github.io/muaawina.com/')}', '_blank')" class="w-9 h-9 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-sm shrink-0 hover:bg-emerald-100">
                                 <i class="fab fa-whatsapp text-lg"></i>
                             </button>
                         </div>`;

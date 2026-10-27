@@ -482,6 +482,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
 </head>
 
 <body class="min-h-screen text-slate-800 pb-10">
+
     <div id="loader" role="status" aria-live="polite" aria-label="MUAAWINA loading">
         <div class="loader-container">
             <div class="loader-logo-wrap"><img src="logo.png" width="94" height="94" class="loader-logo" alt="MUAAWINA Logo" fetchpriority="high"></div>
@@ -490,7 +491,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
         </div>
     </div>
 
-    <div class="max-w-md mx-auto" id="mainApp">
+    <div class="max-w-md mx-auto" id="mainApp" hidden>
 
         <div id="loginPage" class="login-wrapper fade-in fixed inset-0 z-50 overflow-hidden">
             <div class="absolute inset-0 w-full h-full opacity-50 pointer-events-none"
@@ -970,6 +971,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-black text-slate-800 tracking-tight italic">അഡ്മിൻ പാനൽ</h2>
                 <div class="flex gap-2">
+                    <button type="button" onclick="openPosterCampaign(true)" class="bg-blue-50 text-blue-700 font-bold px-3 py-2 rounded-xl text-xs">Campaign</button>
                     <button onclick="openReminderModal()"
                         class="bg-amber-50 text-amber-600 font-bold px-3 py-2 rounded-xl text-xs active:scale-95 border border-amber-100 shadow-sm flex items-center gap-1.5"><i
                             class="fas fa-bell"></i> റിമൈൻഡർ</button>
@@ -2181,7 +2183,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
         let activeMemberTab = 'home';
         let memberRefreshRevision = 0;
         const apiRequestsInFlight = new Map();
-        const backgroundActions = new Set(['checkPendingApprovals','getMemberData','getAdminData','getHighlights','getAppSettings','getDirectoryData','markAppDownloaded','sendWhatsAppMedia']);
+        const backgroundActions = new Set(['getPosterCampaign','checkPendingApprovals','getMemberData','getAdminData','getHighlights','getAppSettings','getDirectoryData','markAppDownloaded','sendWhatsAppMedia']);
         function saveSession(token, role) {
             authToken = token; authRole = role;
             localStorage.setItem('muaawina_session_token', token);
@@ -2194,7 +2196,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
             const token = authToken;
             const generation=authGeneration;
             const key = JSON.stringify({action, data, token});
-            const read = ['getMemberData','getAdminData','getAppSettings','getDirectoryData','getHighlights','checkPendingApprovals'].includes(action);
+            const read = ['getPosterCampaign','getMemberData','getAdminData','getAppSettings','getDirectoryData','getHighlights','checkPendingApprovals'].includes(action);
             if (read && apiRequestsInFlight.has(key)) return apiRequestsInFlight.get(key);
             const focused=document.activeElement?.closest?.('button');
             const button = originButton || (focused&&!focused.closest('.swal2-container')?focused:lastActionButton);
@@ -2221,11 +2223,21 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
             if(!result?.success)throw new Error(result?.error||'Notification queue failed');
             return result;
         }
+        let appStartupStarted = false, appStartupPromise = null, startupLoaderHeld = false;
+        function startMuaawinaApp() {
+            if(appStartupPromise)return appStartupPromise;
+            appStartupStarted=true;
+            document.getElementById('mainApp').hidden=false;
+            showLoader(true,true);
+            appStartupPromise=Promise.resolve().then(async()=>{
+                localStorage.removeItem('muaawina_admin_login_hash');
+                if(authToken && authRole==='admin')await adminLogin(true);
+                else if(authToken && authRole==='member')await fetchMemberDetails(true);
+            }).finally(()=>{if(!startupLoaderHeld)showLoader(false);});
+            return appStartupPromise;
+        }
         window.onload = function() {
-            localStorage.removeItem('muaawina_admin_login_hash');
-            if(authToken && authRole==='admin') adminLogin(true);
-            else if(authToken && authRole==='member') fetchMemberDetails(true);
-            else showLoader(false);
+            if(!window.muaawinaCampaignGate)startMuaawinaApp();
         };
 
         // Only initial login blocks the screen. Other requests use their button.
@@ -2257,6 +2269,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
             };
         }
         function showLoader(s, waitForPage = false) {
+            if(!s && startupLoaderHeld)return;
             const loader = document.getElementById('loader');
             if (s && waitForPage) loader?.classList.remove('hidden');
             else loader?.classList.add('hidden');
@@ -7266,7 +7279,7 @@ button[aria-busy="true"] { opacity:.75; cursor:wait; }
         // Preserve Unicode and IME composition in names, headings, and descriptions.
         // Phone, IDs and URLs are validated by their own field/server rules.
     </script>
+<script src="campaign.js"></script>
 </body>
 
 </html>
-
